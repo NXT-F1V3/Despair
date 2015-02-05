@@ -38,7 +38,7 @@ ZIMAGE_DIR="${HOME}/android/Despair/arch/arm/boot"
 # Functions
 function clean_all {
 		rm -rf $MODULES_DIR/*
-		cd ~/android/Despair/ramdisk
+		cd ~/android/Despair/lk.ramdisk
 		rm -rf $KERNEL
 		rm -rf $DTBIMAGE
 		git reset --hard > /dev/null 2>&1
