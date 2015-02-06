@@ -31,6 +31,9 @@ chmod 755 /sbin/lkcc
 # init.d support
 /system/xbin/busybox run-parts /system/etc/init.d
 
+# boot without cpu boost
+echo N > /sys/modules/cpu_boost/parameters/cpuboost_enable
+
 #
 # lkconfig settings below
 #
