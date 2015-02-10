@@ -348,7 +348,8 @@ int mdss_mdp_overlay_req_check(struct msm_fb_data_type *mfd,
 			}
 		}
 
-		if (req->flags & MDP_DEINTERLACE) {
+		if ((req->flags & MDP_DEINTERLACE) &&
+					!req->scale.enable_pxl_ext) {
 			if (req->flags & MDP_SOURCE_ROTATED_90) {
 				if ((req->src_rect.w % 4) != 0) {
 					pr_err("interlaced rect not h/4\n");
@@ -424,7 +425,6 @@ static int __mdss_mdp_validate_pxl_extn(struct mdss_mdp_pipe *pipe)
 
 	for (plane = 0; plane < MAX_PLANES; plane++) {
 		u32 hor_req_pixels, hor_fetch_pixels;
-		u32 hor_ov_fetch, vert_ov_fetch;
 		u32 vert_req_pixels, vert_fetch_pixels;
 		u32 src_w = pipe->src.w >> pipe->horz_deci;
 		u32 src_h = pipe->src.h >> pipe->vert_deci;
@@ -461,29 +461,21 @@ static int __mdss_mdp_validate_pxl_extn(struct mdss_mdp_pipe *pipe)
 			pipe->scale.right_ftch[plane] +
 			pipe->scale.right_rpt[plane];
 
-		hor_ov_fetch = src_w + pipe->scale.left_ftch[plane] +
-			pipe->scale.right_ftch[plane];
-
-		vert_req_pixels = pipe->scale.num_ext_pxls_top[plane] +
+		vert_req_pixels = src_h + pipe->scale.num_ext_pxls_top[plane] +
 			pipe->scale.num_ext_pxls_btm[plane];
 
-		vert_fetch_pixels = pipe->scale.top_ftch[plane] +
+		vert_fetch_pixels = src_h + pipe->scale.top_ftch[plane] +
 			pipe->scale.top_rpt[plane] +
 			pipe->scale.btm_ftch[plane] +
 			pipe->scale.btm_rpt[plane];
 
-		vert_ov_fetch = src_h + pipe->scale.top_ftch[plane] +
-			pipe->scale.btm_ftch[plane];
-
 		if ((hor_req_pixels != hor_fetch_pixels) ||
-			(hor_ov_fetch > pipe->img_width) ||
+			(hor_fetch_pixels > pipe->img_width) ||
 			(vert_req_pixels != vert_fetch_pixels) ||
-			(vert_ov_fetch > pipe->img_height)) {
-			pr_err("err: h_req:%d h_fetch:%d v_req:%d v_fetch:%d src_img:[%d,%d]\n",
+			(vert_fetch_pixels > pipe->img_height)) {
+			pr_err("err: h_req:%d h_fetch:%d v_req:%d v_fetch:%d\n",
 					hor_req_pixels, hor_fetch_pixels,
-					vert_req_pixels, vert_fetch_pixels,
-					pipe->img_width, pipe->img_height);
-			pipe->scale.enable_pxl_ext = 0;
+					vert_req_pixels, vert_fetch_pixels);
 			return -EINVAL;
 		}
 	}
@@ -676,7 +668,7 @@ int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 		}
 
 		if (pipe == NULL) {
-			pr_err_ratelimited("error allocating pipe. flags=0x%x\n",
+			pr_err("error allocating pipe. flags=0x%x\n",
 				req->flags);
 			return -ENODEV;
 		}
@@ -837,7 +829,6 @@ int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	req->priority = pipe->priority;
 	pipe->req_data = *req;
 
-	mdss_mdp_pipe_sspp_term(pipe);
 	if (pipe->flags & MDP_OVERLAY_PP_CFG_EN) {
 		memcpy(&pipe->pp_cfg, &req->overlay_pp_cfg,
 					sizeof(struct mdp_overlay_pp_params));
@@ -893,17 +884,14 @@ int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	 * When scaling is enabled src crop and image
 	 * width and height is modified by user
 	 */
-	if ((pipe->flags & MDP_DEINTERLACE)) {
+	if ((pipe->flags & MDP_DEINTERLACE) && !pipe->scale.enable_pxl_ext) {
 		if (pipe->flags & MDP_SOURCE_ROTATED_90) {
 			pipe->src.x = DIV_ROUND_UP(pipe->src.x, 2);
 			pipe->src.x &= ~1;
-			if (!pipe->scale.enable_pxl_ext) {
-				pipe->src.w /= 2;
-				pipe->img_width /= 2;
-			}
+			pipe->src.w /= 2;
+			pipe->img_width /= 2;
 		} else {
-			if (!pipe->scale.enable_pxl_ext)
-				pipe->src.h /= 2;
+			pipe->src.h /= 2;
 			pipe->src.y = DIV_ROUND_UP(pipe->src.y, 2);
 			pipe->src.y &= ~1;
 		}
