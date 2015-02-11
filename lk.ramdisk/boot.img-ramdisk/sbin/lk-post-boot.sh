@@ -20,7 +20,39 @@ chmod 444 /dev/frandom
 	"allow system_server dex2oat_exec file rx_file_perms" \
 	"allow drmserver theme_data_file file r_file_perms" \
 	"allow netd self capability fsetid" \
-	"allow radio tap2wake_dev file r_file_perms"
+	"allow radio tap2wake_dev file r_file_perms" \
+	"allow suclient sudaemon unix_stream_socket { connectto read write setopt ioctl }" \
+	"allow suclient superuser_device dir { create rw_dir_perms setattr unlink }" \
+	"allow suclient superuser_device sock_file { create setattr unlink write }" \
+	"allow suclient untrusted_app_devpts chr_file { read write ioctl }" \
+	"allow system_app superuser_device sock_file { read write create setattr unlink getattr }" \
+	"allow system_app sudaemon unix_stream_socket { connectto read write setopt ioctl }" \
+	"allow system_app superuser_device dir { create rw_dir_perms setattr unlink }" \
+	"allow sudaemon superuser_device dir { create rw_dir_perms setattr unlink }" \
+	"allow sudaemon superuser_device sock_file { create setattr unlink write }" \
+	"dontaudit sudaemon self capability_class_set *" \
+	"dontaudit sudaemon kernel security *" \
+	"dontaudit sudaemon kernel system *" \
+	"dontaudit sudaemon self:memprotect *" \
+	"dontaudit sudaemon domain process *" \
+	"dontaudit sudaemon domain fd *" \
+	"dontaudit sudaemon domain dir *" \
+	"dontaudit sudaemon domain lnk_file *" \
+	"dontaudit sudaemon domain { fifo_file file } *" \
+	"dontaudit sudaemon domain socket_class_set *" \
+	"dontaudit sudaemon domain ipc_class_set *" \
+	"dontaudit sudaemon domain key *" \
+	"dontaudit sudaemon fs_type:filesystem *" \
+	"dontaudit sudaemon {fs_type dev_type file_type} dir_file_class_set *" \
+	"dontaudit sudaemon node_type node *" \
+	"dontaudit sudaemon node_type { tcp_socket udp_socket rawip_socket } *" \
+	"dontaudit sudaemon netif_type netif *" \
+	"dontaudit sudaemon port_type socket_class_set *" \
+	"dontaudit sudaemon port_type { tcp_socket dccp_socket } *" \
+	"dontaudit sudaemon domain peer *;" \
+	"dontaudit sudaemon domain binder *" \
+	"dontaudit sudaemon property_type property_service *" \
+	"allow suclient sudaemon unix_stream_socket { connectto read write setopt ioctl }"
 
 # take a little more RAM from file/dir caches and give them to apps 
 echo 200 > /proc/sys/vm/vfs_cache_pressure
