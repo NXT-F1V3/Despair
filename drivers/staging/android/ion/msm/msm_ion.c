@@ -119,7 +119,7 @@ static struct notifier_block msm_ion_nb = {
 	.notifier_call = msm_ion_lowmem_notifier,
 };
 
-struct ion_client *msm_ion_client_create(const char *name)
+struct ion_client *msm_ion_client_create(unsigned int heap_mask, const char *name)
 {
 	/*
 	 * The assumption is that if there is a NULL device, the ion
