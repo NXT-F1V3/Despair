@@ -16,7 +16,7 @@ DEFCONFIG="lk_defconfig"
 
 # Kernel Details
 BASE_AK_VER="Despair"
-VER=".R14"
+VER=".R15"
 AK_VER="$BASE_AK_VER$VER"
 
 # Vars
