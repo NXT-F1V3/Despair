@@ -1712,7 +1712,7 @@ static int __wfd_probe(struct platform_device *pdev)
 
 	pdev->dev.platform_data = (void *) wfd_dev;
 
-	ion_client = msm_ion_client_create("wfd");
+	ion_client = msm_ion_client_create(-1, "wfd");
 
 	rc = wfd_stats_setup();
 	if (rc) {

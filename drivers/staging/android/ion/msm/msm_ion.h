@@ -100,7 +100,7 @@ struct ion_cma_pdata {
  * are the same as ion_client_create.
  */
 
-struct ion_client *msm_ion_client_create(const char *name);
+struct ion_client *msm_ion_client_create(unsigned int heap_mask, const char *name);
 
 /**
  * ion_handle_get_flags - get the flags for a given handle
