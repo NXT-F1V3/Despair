@@ -19,7 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#include <asm/assembler.h>
 
 #define TTB_IRGN_NC	(0 << 8)
 #define TTB_IRGN_WBWA	(1 << 8)
@@ -54,7 +53,7 @@ ENTRY(cpu_v7_switch_mm)
 	mcrr	p15, 0, r0, r3, c2		@ set TTB 0
 	isb
 #endif
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7_switch_mm)
 
 #ifdef __ARMEB__
@@ -79,18 +78,13 @@ ENTRY(cpu_v7_set_pte_ext)
 	tst	rh, #1 << (57 - 32)		@ L_PTE_NONE
 	bicne	rl, #L_PTE_VALID
 	bne	1f
-
-	eor	ip, rh, #1 << (55 - 32)	@ toggle L_PTE_DIRTY in temp reg to
-					@ test for !L_PTE_DIRTY || L_PTE_RDONLY
-	tst	ip, #1 << (55 - 32) | 1 << (58 - 32)
-	orrne	rl, #PTE_AP2
-	biceq	rl, #PTE_AP2
-
+	tst	rh, #1 << (55 - 32)		@ L_PTE_DIRTY
+	orreq	rl, #L_PTE_RDONLY
 1:	strd	r2, r3, [r0]
 	ALT_SMP(W(nop))
 	ALT_UP (mcr	p15, 0, r0, c7, c10, 1)		@ flush_pte
 #endif
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7_set_pte_ext)
 
 	/*
